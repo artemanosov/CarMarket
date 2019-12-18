@@ -19,7 +19,7 @@ public class Car {
     private String brand;
     private String model;
     private int year;
-    private double price;
+    private int price;
     @Column(updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime postTime;
@@ -56,11 +56,11 @@ public class Car {
         this.year = year;
     }
 
-    public double getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 
