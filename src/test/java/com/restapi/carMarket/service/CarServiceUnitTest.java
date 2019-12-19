@@ -16,8 +16,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 
-import java.time.LocalDateTime;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CarMarketApplication.class)
 public class CarServiceUnitTest {
@@ -27,18 +25,30 @@ public class CarServiceUnitTest {
     @MockBean
     CarDataAccessObject carDAO;
 
-    //@Test
+    @Test
     public void insertionOfCarShouldReturnTrue() throws Exception{
-        Car car = new Car();
-        car.setBrand("BMW");
-        car.setModel("5 Series");
-        car.setPrice(40000);
-        car.setYear(2017);
-        car.setPostTime(LocalDateTime.now());
-        System.out.println(car.getId());
-
+        Car car = new Car("BMW","5 Series", 2017, 40000);
         boolean inserted = carService.insert(car);
-        //Assert.assertTrue(inserted);
-        //Mockito.verify(carDAO,Mockito.times(1)).insert(car);
+
+        Assert.assertTrue(inserted);
+        Mockito.verify(carDAO,Mockito.times(1)).insert(car);
+    }
+
+    @Test
+    public void insertionOfCarWithPriceLessThanOneReturnsFalseNoInsertionHappens() throws Exception{
+        Car car = new Car("BMW","5 Series", 2019, 0);
+        boolean inserted = carService.insert(car);
+
+        Assert.assertFalse(inserted);
+        Mockito.verify(carDAO,Mockito.times(0)).insert(car);
+    }
+
+    @Test
+    public void insertionOfCarWithYearTooHighReturnsFalseNoInsertionHappens() throws Exception{
+        Car car = new Car("BMW","5 Series", 3, 30000);
+        boolean inserted = carService.insert(car);
+
+        Assert.assertFalse(inserted);
+        Mockito.verify(carDAO,Mockito.times(0)).insert(car);
     }
 }

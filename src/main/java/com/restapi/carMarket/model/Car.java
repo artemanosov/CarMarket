@@ -6,23 +6,40 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-@Table
 @ToString(of = {"id", "brand","model", "year", "price","postTime"})
 @EqualsAndHashCode(of = {"id"})
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @NotBlank
+    @NotNull
+    @NotBlank
     private String brand;
+    @NotBlank
+    @NotNull
+    @NotBlank
     private String model;
     private int year;
     private int price;
     @Column(updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime postTime;
+
+    public Car(){}
+
+    public Car(String brand, String model, int year, int price) {
+        this.brand = brand;
+        this.model = model;
+        this.year = year;
+        this.price = price;
+        postTime = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
