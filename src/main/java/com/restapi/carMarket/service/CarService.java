@@ -1,6 +1,7 @@
 package com.restapi.carMarket.service;
 
 import com.restapi.carMarket.dao.CarDao;
+import com.restapi.carMarket.exceptions.CarNotFoundException;
 import com.restapi.carMarket.model.Car;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,8 +43,13 @@ public class CarService {
         return carDao.findAll();
     }
 
-    public Optional<Car> findById(Long id) {
-        return carDao.findById(id);
+    public Car findById(Long id) {
+        Optional<Car> car = carDao.findById(id);
+
+        if(car.isPresent())
+            return car.get();
+        else
+            throw new CarNotFoundException();
     }
 
     public void deleteById(Long id) {
