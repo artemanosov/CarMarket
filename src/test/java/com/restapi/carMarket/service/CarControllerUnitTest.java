@@ -21,9 +21,7 @@ import java.util.List;
 
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -113,5 +111,19 @@ public class CarControllerUnitTest {
                 .contentType(APPLICATION_JSON)
                 .content(car.toJSONString()))
                 .andExpect(status().isNoContent()).andDo(print());
+    }
+
+    @Test
+    public void updateShouldReturnCode200() throws Exception{
+        JSONObject car = new JSONObject();
+        car.put("brand", "Porsche");
+        car.put("model", "Panamera");
+        car.put("year", 2017);
+        car.put("price", 70000);
+
+        mockMvc.perform(put("/cars/"+Long.valueOf(1))
+                .contentType(APPLICATION_JSON)
+                .content(car.toJSONString()))
+                .andExpect(status().isOk()).andDo(print());
     }
 }

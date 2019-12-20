@@ -60,4 +60,8 @@ public class CarService {
     public void delete(Car car) {
         carDao.delete(car);
     }
+
+    public void update(Long id, Car car) {
+
+    }
 }

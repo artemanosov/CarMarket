@@ -45,4 +45,11 @@ public class CarController {
     public void deleteById(@PathVariable("id") Long id){
         carService.deleteById(id);
     }
+
+    @PutMapping("{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void update(@PathVariable Long id, @Valid @RequestBody Car car){
+        carService.update(id,car);
+    }
+
 }
