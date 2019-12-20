@@ -1,25 +1,26 @@
 package com.restapi.carMarket.service;
 
-import com.restapi.carMarket.dao.CarDataAccessObject;
-import com.restapi.carMarket.exceptions.CarIsNotValidException;
+import com.restapi.carMarket.dao.CarDao;
 import com.restapi.carMarket.model.Car;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 
 @Service
 public class CarService {
 
     @Autowired
-    CarDataAccessObject carDao;
+    CarDao carDao;
 
     public boolean insert(Car car) {
         boolean valid = isValid(car);
 
         if(valid)
-            carDao.insert(car);
+            carDao.save(car);
 
         return valid;
     }
@@ -35,5 +36,22 @@ public class CarService {
 
     private boolean isValidPrice(Car car) {
         return car.getPrice()<1 || car.getPrice()>2000000000;
+    }
+
+    public List<Car> findAll() {
+        return carDao.findAll();
+    }
+
+    public Optional<Car> findById(Long id) {
+        return carDao.findById(id);
+    }
+
+    public void deleteById(Long id) {
+        carDao.deleteById(id);
+    }
+
+
+    public void delete(Car car) {
+        carDao.delete(car);
     }
 }
