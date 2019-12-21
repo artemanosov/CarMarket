@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @ToString(of = {"id", "brand","model", "year", "price","postTime"})
-@EqualsAndHashCode(of = {"id", "brand","model", "year", "price","postTime"})
+@EqualsAndHashCode(of = {"brand","model", "year", "price","postTime"})
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

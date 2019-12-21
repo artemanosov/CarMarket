@@ -4,7 +4,9 @@ import com.restapi.carMarket.dao.CarDao;
 import com.restapi.carMarket.exceptions.CarNotFoundException;
 import com.restapi.carMarket.exceptions.CarNotValidException;
 import com.restapi.carMarket.model.Car;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,9 +21,7 @@ public class CarService {
     CarDao carDao;
 
     public void insert(Car car) {
-        boolean valid = isValid(car);
-
-        if(valid)
+        if(isValid(car))
             carDao.save(car);
         else
             throw new CarNotValidException();
@@ -58,14 +58,30 @@ public class CarService {
     }
 
     public void delete(Car car) {
-        carDao.delete(car);
+        if(carDao.exists(Example.of(car)))
+            carDao.delete(car);
+        else
+            throw new CarNotFoundException();
+
     }
 
     public void deleteById(Long id) {
-        carDao.deleteById(id);
+        if(carDao.existsById(id))
+            carDao.deleteById(id);
+        else
+            throw new CarNotFoundException();
     }
 
     public void update(Long id, Car car) {
+        if(isValid(car)){
+            Optional<Car> oldCar = carDao.findById(id);
+
+            if(oldCar.isPresent())
+                BeanUtils.copyProperties(oldCar.get(), car, "id");
+            else
+               throw new CarNotFoundException();
+        }else
+            throw new CarNotValidException();
 
     }
 }
