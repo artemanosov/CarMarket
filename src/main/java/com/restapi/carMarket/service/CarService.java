@@ -75,7 +75,6 @@ public class CarService {
     public void update(Long id, Car car) {
         if(isValid(car)){
             Optional<Car> oldCar = carDao.findById(id);
-
             if(oldCar.isPresent())
                 BeanUtils.copyProperties(oldCar.get(), car, "id");
             else
