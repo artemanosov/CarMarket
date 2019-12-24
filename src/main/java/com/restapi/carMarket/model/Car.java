@@ -2,10 +2,13 @@ package com.restapi.carMarket.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.restapi.carMarket.model.validation.ValidCarYear;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -17,13 +20,16 @@ public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NotNull
-    @NotBlank
+    @NotNull(message = "Brand name is mandatory")
+    @NotBlank(message = "Brand name is mandatory")
     private String brand;
-    @NotNull
-    @NotBlank
+    @NotNull(message = "Model name is mandatory")
+    @NotBlank(message = "Model name is mandatory")
     private String model;
+    @ValidCarYear
     private int year;
+    @Min(1)
+    @Max(2000000000)
     private int price;
     @Column(updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

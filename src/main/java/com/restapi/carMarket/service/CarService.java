@@ -26,19 +26,19 @@ public class CarService {
     }
 
     private void checkIfCarIsValid(Car car) {
-        if(isValidPrice(car)){
+        if(isInvalidPrice(car)){
             throw new CarNotValidException("The price is out of range");
         }
-        else if(isValidYear(car)) {
+        else if(isInvalidYear(car)) {
             throw new CarNotValidException("The year is invalid");
         }
     }
 
-    private boolean isValidYear(Car car) {
+    private boolean isInvalidYear(Car car) {
         return car.getYear()<1885 || car.getYear()> LocalDateTime.now().getYear();
     }
 
-    private boolean isValidPrice(Car car) {
+    private boolean isInvalidPrice(Car car) {
         return car.getPrice()<1 || car.getPrice()>2000000000;
     }
 
