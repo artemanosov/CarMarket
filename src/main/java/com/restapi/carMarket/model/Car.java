@@ -17,11 +17,11 @@ public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NotNull(message = "Brand is mandatory")
-    @NotBlank(message = "Brand is mandatory")
+    @NotNull
+    @NotBlank
     private String brand;
-    @NotNull(message = "Model is mandatory")
-    @NotBlank(message = "Model is mandatory")
+    @NotNull
+    @NotBlank
     private String model;
     private int year;
     private int price;

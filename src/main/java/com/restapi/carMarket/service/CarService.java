@@ -21,19 +21,17 @@ public class CarService {
     CarDao carDao;
 
     public void insert(Car car) {
-        if(isValid(car))
-            carDao.save(car);
-        else
-            throw new CarNotValidException();
+        checkIfCarIsValid(car);
+        carDao.save(car);
     }
 
-    private boolean isValid(Car car) {
-        boolean valid = true;
-        if(isValidPrice(car))
-            valid = false;
-        else if(isValidYear(car))
-            valid = false;
-        return valid;
+    private void checkIfCarIsValid(Car car) {
+        if(isValidPrice(car)){
+            throw new CarNotValidException("The price is out of range");
+        }
+        else if(isValidYear(car)) {
+            throw new CarNotValidException("The year is invalid");
+        }
     }
 
     private boolean isValidYear(Car car) {
@@ -73,14 +71,13 @@ public class CarService {
     }
 
     public void update(Long id, Car car) {
-        if(isValid(car)){
-            Optional<Car> oldCar = carDao.findById(id);
-            if(oldCar.isPresent())
-                BeanUtils.copyProperties(oldCar.get(), car, "id");
-            else
-               throw new CarNotFoundException();
-        }else
-            throw new CarNotValidException();
-
+        checkIfCarIsValid(car);
+        Optional<Car> oldCar = carDao.findById(id);
+        
+        if(oldCar.isPresent())
+            BeanUtils.copyProperties(oldCar.get(), car, "id");
+        else
+            throw new CarNotFoundException();
+        
     }
 }
