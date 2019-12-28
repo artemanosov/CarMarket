@@ -30,14 +30,14 @@ public class CarService {
         if(car.isPresent())
             return car.get();
         else
-            throw new CarNotFoundException();
+            throw new CarNotFoundException("Car with id("+id+") is not found");
     }
 
     public void removeCarFromMarket(Car car) {
         if(carDao.exists(Example.of(car)))
             carDao.delete(car);
         else
-            throw new CarNotFoundException();
+            throw new CarNotFoundException("A Car with properties("+car.toString()+") is not found");
 
     }
 
@@ -45,7 +45,7 @@ public class CarService {
         if(carDao.existsById(id))
             carDao.deleteById(id);
         else
-            throw new CarNotFoundException();
+            throw new CarNotFoundException("Car with id("+id+") is not found");
     }
 
     public Car updateCarInformation(Long id, Car car) {
@@ -82,10 +82,10 @@ public class CarService {
             throw new CarNotValidException("Model name cannot be blank");
         }
         else if(isInvalidPrice(car)){
-            throw new CarNotValidException("The price is out of range");
+            throw new CarNotValidException("The price is out of range, valid price from 1 to 2,000,000,000");
         }
         else if(isInvalidYear(car)) {
-            throw new CarNotValidException("The year is invalid");
+            throw new CarNotValidException("The year is invalid, valid range from 1885 to current year");
         }
     }
 
