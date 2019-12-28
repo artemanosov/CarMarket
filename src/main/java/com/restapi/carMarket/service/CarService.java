@@ -20,28 +20,6 @@ public class CarService {
     @Autowired
     CarDao carDao;
 
-    public void insert(Car car) {
-        checkIfCarIsValid(car);
-        carDao.save(car);
-    }
-
-    private void checkIfCarIsValid(Car car) {
-        if(isInvalidPrice(car)){
-            throw new CarNotValidException("The price is out of range");
-        }
-        else if(isInvalidYear(car)) {
-            throw new CarNotValidException("The year is invalid");
-        }
-    }
-
-    private boolean isInvalidYear(Car car) {
-        return car.getYear()<1885 || car.getYear()> LocalDateTime.now().getYear();
-    }
-
-    private boolean isInvalidPrice(Car car) {
-        return car.getPrice()<1 || car.getPrice()>2000000000;
-    }
-
     public List<Car> findAll() {
         return carDao.findAll();
     }
@@ -70,14 +48,68 @@ public class CarService {
             throw new CarNotFoundException();
     }
 
-    public void update(Long id, Car car) {
+    public Car update(Long id, Car car) {
         checkIfCarIsValid(car);
         Optional<Car> oldCar = carDao.findById(id);
         
-        if(oldCar.isPresent())
+        if(oldCar.isPresent()) {
             BeanUtils.copyProperties(oldCar.get(), car, "id");
-        else
-            throw new CarNotFoundException();
-        
+            return oldCar.get();
+        }
+        else{
+            car.setPostTime(LocalDateTime.now());
+            return carDao.save(car);
+        }
+    }
+
+    public Car insert(Car car) {
+        checkIfCarIsValid(car);
+        car.setPostTime(LocalDateTime.now());
+        return carDao.save(car);
+    }
+
+    private void checkIfCarIsValid(Car car) {
+        if(isCarBrandNull(car)){
+            throw new CarNotValidException("Brand name cannot be null");
+        }
+        else if(isCarBrandBlank(car)){
+            throw new CarNotValidException("Brand name cannot be blank");
+        }
+        else if(isCarModelNull(car)){
+            throw new CarNotValidException("Model name cannot be null");
+        }
+        else if(isCarModelBlank(car)){
+            throw new CarNotValidException("Model name cannot be blank");
+        }
+        else if(isInvalidPrice(car)){
+            throw new CarNotValidException("The price is out of range");
+        }
+        else if(isInvalidYear(car)) {
+            throw new CarNotValidException("The year is invalid");
+        }
+    }
+
+    private boolean isCarModelBlank(Car car) {
+        return car.getModel().length()==0;
+    }
+
+    private boolean isCarModelNull(Car car) {
+        return car.getModel()==null;
+    }
+
+    private boolean isCarBrandBlank(Car car) {
+        return car.getBrand().length()==0;
+    }
+
+    private boolean isCarBrandNull(Car car) {
+        return car.getBrand()==null;
+    }
+
+    private boolean isInvalidYear(Car car) {
+        return car.getYear()<1885 || car.getYear()> LocalDateTime.now().getYear();
+    }
+
+    private boolean isInvalidPrice(Car car) {
+        return car.getPrice()<1 || car.getPrice()>2000000000;
     }
 }

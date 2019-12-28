@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-abstract class ApiSubError {
+abstract class ErrorConditions {
 }
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
-class ApiValidationError extends ApiSubError{
+class ApiValidationError extends ErrorConditions {
     private String object;
     private String field;
     private Object rejectedValue;

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/cars")
@@ -30,13 +29,13 @@ public class CarController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void insert(@NotNull @Valid @RequestBody Car car) {
-        carService.insert(car);
+    public Car insert(@NotNull @RequestBody Car car) {
+        return carService.insert(car);
     }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@NotNull @Valid @RequestBody Car car){
+    public void deleteById(@NotNull @RequestBody Car car){
         carService.delete(car);
     }
 
@@ -48,7 +47,7 @@ public class CarController {
 
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void update(@NotNull @PathVariable Long id, @NotNull @Valid @RequestBody Car car){
+    public void update(@NotNull @PathVariable Long id, @NotNull @RequestBody Car car){
         carService.update(id,car);
     }
 

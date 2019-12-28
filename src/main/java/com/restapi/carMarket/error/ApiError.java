@@ -12,7 +12,7 @@ public class ApiError {
     private LocalDateTime timestamp;
     private String message;
     private String debugMessage;
-    private List<ApiSubError> subErrors;
+    private List<ErrorConditions> errorConditions;
 
     private ApiError(){
         timestamp = LocalDateTime.now();
@@ -49,8 +49,8 @@ public class ApiError {
         return debugMessage;
     }
 
-    public List<ApiSubError> getSubErrors() {
-        return subErrors;
+    public List<ErrorConditions> getErrorConditions() {
+        return errorConditions;
     }
 
     public void setStatus(HttpStatus status) {
