@@ -4,12 +4,10 @@ package com.restapi.carMarket.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restapi.carMarket.api.CarController;
 import com.restapi.carMarket.exceptions.CarNotFoundException;
-import com.restapi.carMarket.exceptions.CarNotValidException;
 import com.restapi.carMarket.exceptions.RestExceptionHandler;
 import com.restapi.carMarket.model.Car;
 import com.restapi.carMarket.service.CarService;
 import net.minidev.json.JSONObject;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -86,7 +83,7 @@ public class CarControllerUnitTest {
     public void findByIdMustReturnACarObject() throws Exception {
         Car car = new Car("Porsche", "Panamera", 2017, 75000);
         car.setId(Long.valueOf(1));
-        given(carService.findById(car.getId())).willReturn(car);
+        given(carService.getCarById(car.getId())).willReturn(car);
 
         mockMvc.perform(get("/cars/" + car.getId())
                 .contentType(APPLICATION_JSON))
@@ -99,7 +96,7 @@ public class CarControllerUnitTest {
 
     @Test
     public void findByIdWhenCarNotFoundShouldReturnCode404() throws Exception{
-        given(carService.findById(10L)).willThrow(new CarNotFoundException());
+        given(carService.getCarById(10L)).willThrow(new CarNotFoundException());
 
         mockMvc.perform(get("/cars/10")
                 .contentType(APPLICATION_JSON))
@@ -116,7 +113,7 @@ public class CarControllerUnitTest {
         newcar.put("year", 2017);
         newcar.put("price", 38000);
 
-        given(carService.insert(car)).willReturn(car);
+        given(carService.addCarToMarket(car)).willReturn(car);
 
         mockMvc.perform(post("/cars")
                 .contentType(APPLICATION_JSON)
@@ -143,8 +140,8 @@ public class CarControllerUnitTest {
         car.put("price", 70000);*/
 
         //jsonSuperHero.write(new SuperHero("Rob", "Mannon", "RobotMan")).getJson()
-        //when(carService.insert(car)).willThrow(new CarNotValidException);
-        //doThrow(CarNotFoundException.class).when(carService).insert(car);
+        //when(carService.addCarToMarket(car)).willThrow(new CarNotValidException);
+        //doThrow(CarNotFoundException.class).when(carService).addCarToMarket(car);
 
         mockMvc.perform(post("/cars")
                 .contentType(APPLICATION_JSON)

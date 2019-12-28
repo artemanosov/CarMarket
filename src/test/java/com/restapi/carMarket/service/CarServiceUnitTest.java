@@ -33,7 +33,7 @@ public class CarServiceUnitTest {
     @Test
     public void insertionOfValidCarShouldReturnTrue() {
         Car car = new Car("BMW","5 Series", 2017, 40000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(1)).save(car);
 
     }
@@ -41,62 +41,62 @@ public class CarServiceUnitTest {
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithYearLessThan1885ShouldThrowCarNotValidException()  {
         Car car = new Car("BMW","5 Series", 0, 40000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithYearBiggerThanCurrentShouldThrowCarNotValidException() {
         Car car = new Car("BMW","5 Series", 2200, 40000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithPriceLessThan1ShouldThrowCarNotValidException() {
         Car car = new Car("BMW","5 Series", 2010, 0);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithPriceToHighShouldThrowCarNotValidException() {
         Car car = new Car("BMW","5 Series", 2010, 2100000000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithBlankBrandShouldThrowCarNotValidException() {
         Car car = new Car("","5 Series", 2010, 2100000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithNullBrandShouldThrowCarNotValidException() {
         Car car = new Car(null,"5 Series", 2010, 2100000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithBlankModelShouldThrowCarNotValidException() {
         Car car = new Car("BMW","", 2010, 2100000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test(expected = CarNotValidException.class)
     public void insertionOfCarWithNullModelShouldReturnCarNotValidException() {
         Car car = new Car("BMW",null, 2010, 2100000);
-        carService.insert(car);
+        carService.addCarToMarket(car);
         Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test
     public void findAllCarsShouldCallFindAllMethodOfDAO() {
-        carService.findAll();
+        carService.getAllCarsOnMarket();
         Mockito.verify(carDAO,Mockito.times(1)).findAll();
     }
 
@@ -107,7 +107,7 @@ public class CarServiceUnitTest {
         Long id = 10L;
 
         given(carDAO.findById(id)).willReturn(returnedCar);
-        Car newCar = carService.findById(id);
+        Car newCar = carService.getCarById(id);
 
         Assert.assertTrue(newCar.equals(car));
         Mockito.verify(carDAO,Mockito.times(1)).findById(id);
@@ -119,7 +119,7 @@ public class CarServiceUnitTest {
         Long id = 10L;
 
         given(carDAO.findById(id)).willReturn(returnedCar);
-        carService.findById(id);
+        carService.getCarById(id);
 
         Mockito.verify(carDAO,Mockito.times(1)).findById(id);
     }
@@ -129,7 +129,7 @@ public class CarServiceUnitTest {
         Long id = 10L;
 
         given(carDAO.existsById(id)).willReturn(true);
-        carService.deleteById(id);
+        carService.removeCarFromMarketById(id);
 
         Mockito.verify(carDAO,Mockito.times(1)).deleteById(id);
     }
@@ -139,7 +139,7 @@ public class CarServiceUnitTest {
         Long id = 10L;
 
         given(carDAO.existsById(id)).willReturn(false);
-        carService.deleteById(id);
+        carService.removeCarFromMarketById(id);
 
         Mockito.verify(carDAO,Mockito.times(1)).deleteById(id);
     }
@@ -149,7 +149,7 @@ public class CarServiceUnitTest {
         Car car = new Car("BMW","5 Series", 2010, 40000);
 
         given(carDAO.exists(Example.of(car))).willReturn(true);
-        carService.delete(car);
+        carService.removeCarFromMarket(car);
 
         Mockito.verify(carDAO,Mockito.times(1)).delete(car);
     }
@@ -159,7 +159,7 @@ public class CarServiceUnitTest {
         Car car = new Car("BMW","5 Series", 2010, 40000);
 
         given(carDAO.exists(Example.of(car))).willReturn(false);
-        carService.delete(car);
+        carService.removeCarFromMarket(car);
 
         Mockito.verify(carDAO,Mockito.times(0)).delete(car);
     }
@@ -171,7 +171,7 @@ public class CarServiceUnitTest {
         Car oldCar = new Car("BMW","5 Series", 2010, 10000);
 
         given(carDAO.findById(id)).willReturn(Optional.of(oldCar));
-        carService.update(id, newCar);
+        carService.updateCarInformation(id, newCar);
 
         Assert.assertTrue(newCar.equals(oldCar));
     }
@@ -183,7 +183,7 @@ public class CarServiceUnitTest {
 
         given(carDAO.findById(id)).willReturn(Optional.empty());
 
-        carService.update(id, newCar);
+        carService.updateCarInformation(id, newCar);
 
         Mockito.verify(carDAO,Mockito.times(1)).save(any(Car.class));
     }
@@ -193,7 +193,7 @@ public class CarServiceUnitTest {
         Long id = 10L;
         Car newCar = new Car("BMW","7 Series", 0, 10000);
 
-        carService.update(id, newCar);
+        carService.updateCarInformation(id, newCar);
     }
 
     @Test(expected = CarNotValidException.class)
@@ -201,6 +201,6 @@ public class CarServiceUnitTest {
         Long id = 10L;
         Car newCar = new Car("BMW","7 Series", 1997, 0);
 
-        carService.update(id, newCar);
+        carService.updateCarInformation(id, newCar);
     }
 }

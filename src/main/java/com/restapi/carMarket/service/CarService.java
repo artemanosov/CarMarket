@@ -20,11 +20,11 @@ public class CarService {
     @Autowired
     CarDao carDao;
 
-    public List<Car> findAll() {
+    public List<Car> getAllCarsOnMarket() {
         return carDao.findAll();
     }
 
-    public Car findById(Long id) {
+    public Car getCarById(Long id) {
         Optional<Car> car = carDao.findById(id);
 
         if(car.isPresent())
@@ -33,7 +33,7 @@ public class CarService {
             throw new CarNotFoundException();
     }
 
-    public void delete(Car car) {
+    public void removeCarFromMarket(Car car) {
         if(carDao.exists(Example.of(car)))
             carDao.delete(car);
         else
@@ -41,14 +41,14 @@ public class CarService {
 
     }
 
-    public void deleteById(Long id) {
+    public void removeCarFromMarketById(Long id) {
         if(carDao.existsById(id))
             carDao.deleteById(id);
         else
             throw new CarNotFoundException();
     }
 
-    public Car update(Long id, Car car) {
+    public Car updateCarInformation(Long id, Car car) {
         checkIfCarIsValid(car);
         Optional<Car> oldCar = carDao.findById(id);
         
@@ -62,7 +62,7 @@ public class CarService {
         }
     }
 
-    public Car insert(Car car) {
+    public Car addCarToMarket(Car car) {
         checkIfCarIsValid(car);
         car.setPostTime(LocalDateTime.now());
         return carDao.save(car);
