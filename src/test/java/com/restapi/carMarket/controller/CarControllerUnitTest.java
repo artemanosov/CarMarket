@@ -4,10 +4,10 @@ package com.restapi.carMarket.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restapi.carMarket.api.CarController;
 import com.restapi.carMarket.exceptions.CarNotFoundException;
+import com.restapi.carMarket.exceptions.CarNotValidException;
 import com.restapi.carMarket.exceptions.RestExceptionHandler;
 import com.restapi.carMarket.model.Car;
 import com.restapi.carMarket.service.CarService;
-import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,13 +20,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -60,7 +60,7 @@ public class CarControllerUnitTest {
         cars.add(new Car("Porsche", "Panamera", 2017, 75000));
         cars.add(new Car("BMW", "3 Series", 2019, 50000));
 
-        given(carController.findAll())
+        given(carService.getAllCarsOnMarket())
                 .willReturn(cars);
 
         mockMvc.perform(get("/cars")
@@ -107,18 +107,12 @@ public class CarControllerUnitTest {
     public void insertShouldReturnCode201AndCarWhenSuccessful() throws Exception {
         Car car = new Car("Porsche","Panamera",2017, 38000);
 
-        JSONObject newcar = new JSONObject();
-        newcar.put("brand", "Porsche");
-        newcar.put("model", "Panamera");
-        newcar.put("year", 2017);
-        newcar.put("price", 38000);
-
         given(carService.addCarToMarket(car)).willReturn(car);
 
         mockMvc.perform(post("/cars")
                 .contentType(APPLICATION_JSON)
                 .characterEncoding("utf-8")
-                .content(newcar.toJSONString()))
+                .content(jsonCar.write(car).getJson()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("brand", is(car.getBrand())))
@@ -131,17 +125,7 @@ public class CarControllerUnitTest {
     public void insertShouldReturnCode400WhenNotSuccessful() throws Exception{
         Car car = new Car("Porsche","Panamera",2017, 0);
 
-
-
-        /*JSONObject car = new JSONObject();
-        car.put("brand", "Porsche");
-        car.put("model", "Panamera");
-        car.put("year", 2017);
-        car.put("price", 70000);*/
-
-        //jsonSuperHero.write(new SuperHero("Rob", "Mannon", "RobotMan")).getJson()
-        //when(carService.addCarToMarket(car)).willThrow(new CarNotValidException);
-        //doThrow(CarNotFoundException.class).when(carService).addCarToMarket(car);
+        given(carService.addCarToMarket(car)).willThrow(CarNotValidException.class);
 
         mockMvc.perform(post("/cars")
                 .contentType(APPLICATION_JSON)
@@ -158,30 +142,53 @@ public class CarControllerUnitTest {
     }
 
     @Test
+    public void deleteByIdShouldReturnCode404WhenCarIsNotFound() throws Exception{
+        doThrow(new CarNotFoundException()).when(carService).removeCarFromMarketById(10L);
+        mockMvc.perform(delete("/cars/"+10L)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound()).andDo(print());
+    }
+
+    @Test
     public void deleteShouldReturnStatusCode204() throws Exception{
-        JSONObject car = new JSONObject();
-        car.put("brand", "Porsche");
-        car.put("model", "Panamera");
-        car.put("year", 2017);
-        car.put("price", 70000);
+        Car car = new Car("Porsche","Panamera",2017, 40000);
 
         mockMvc.perform(delete("/cars")
                 .contentType(APPLICATION_JSON)
-                .content(car.toJSONString()))
+                .content(jsonCar.write(car).getJson()))
                 .andExpect(status().isNoContent()).andDo(print());
     }
 
     @Test
+    public void deleteShouldReturnStatsCode404WhenCarIsNotFound() throws Exception{
+        Car car = new Car("Porsche","Panamera",2017, 40000);
+        doThrow(new CarNotFoundException()).when(carService).removeCarFromMarket(car);
+
+        mockMvc.perform(delete("/cars")
+                .contentType(APPLICATION_JSON)
+                .content(jsonCar.write(car).getJson()))
+                .andExpect(status().isNotFound()).andDo(print());
+    }
+
+    @Test
     public void updateShouldReturnCode200() throws Exception{
-        JSONObject car = new JSONObject();
-        car.put("brand", "Porsche");
-        car.put("model", "Panamera");
-        car.put("year", 2017);
-        car.put("price", 70000);
+        Car car = new Car("Porsche","Panamera",2017, 40000);
 
         mockMvc.perform(put("/cars/"+Long.valueOf(1))
                 .contentType(APPLICATION_JSON)
-                .content(car.toJSONString()))
+                .content(jsonCar.write(car).getJson()))
                 .andExpect(status().isOk()).andDo(print());
+    }
+
+    @Test
+    public void updateMustReturnCode400WhenCarIsInvalid() throws Exception{
+        Car car = new Car("Porsche","Panamera",2017, 40000);
+
+        given(carService.updateCarInformation(10L, car)).willThrow(CarNotValidException.class);
+
+        mockMvc.perform(put("/cars/"+10L)
+                .contentType(APPLICATION_JSON)
+                .content(jsonCar.write(car).getJson()))
+                .andExpect(status().isBadRequest()).andDo(print());
     }
 }

@@ -34,7 +34,6 @@ public class Car {
         this.model = model;
         this.year = year;
         this.price = price;
-        postTime = LocalDateTime.now();
     }
 
     public Long getId() {
