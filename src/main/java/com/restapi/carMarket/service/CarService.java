@@ -25,13 +25,9 @@ public class CarService {
     }
 
     public Car getCarById(Long id) {
-        Optional<Car> car = carDao.findById(id);
-
-        if(car.isPresent())
-            return car.get();
-        else
-            throw new CarNotFoundException("Car with id("+id+") is not found");
+        return carDao.findById(id).orElseThrow(() -> new CarNotFoundException("Car with id("+id+") is not found"));
     }
+
 
     public void removeCarFromMarket(Car car) {
         if(carDao.exists(Example.of(car)))
@@ -42,23 +38,20 @@ public class CarService {
     }
 
     public void removeCarFromMarketById(Long id) {
-        if(carDao.existsById(id))
-            carDao.deleteById(id);
-        else
-            throw new CarNotFoundException("Car with id("+id+") is not found");
+        Car carToRemove = getCarById(id);
+        carDao.deleteById(carToRemove.getId());
     }
 
     public Car updateCarInformation(Long id, Car car) {
-        checkIfCarIsValid(car);
         Optional<Car> oldCar = carDao.findById(id);
         
         if(oldCar.isPresent()) {
+            checkIfCarIsValid(car);
             BeanUtils.copyProperties(oldCar.get(), car, "id");
-            return oldCar.get();
+            return carDao.save(oldCar.get());
         }
         else{
-            car.setPostTime(LocalDateTime.now());
-            return carDao.save(car);
+            return addCarToMarket(car);
         }
     }
 

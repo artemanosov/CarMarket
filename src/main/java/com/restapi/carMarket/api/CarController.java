@@ -35,7 +35,7 @@ public class CarController {
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@NotNull @RequestBody Car car){
+    public void deleteCar(@NotNull @RequestBody Car car){
         carService.removeCarFromMarket(car);
     }
 
