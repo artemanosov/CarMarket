@@ -6,19 +6,17 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-@ToString(of = {"id", "brand","model", "year", "price","postTime"})
-@EqualsAndHashCode(of = {"brand","model", "year", "price","postTime"})
+@ToString(of = {"id", "vinCode", "brand","model", "year", "price","postTime"})
+@EqualsAndHashCode(of = {"vinCode", "brand","model", "year", "price","postTime"})
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Column(unique = true)
+    private String vinCode;
     private String brand;
     private String model;
     private int year;
@@ -29,7 +27,8 @@ public class Car {
 
     public Car(){}
 
-    public Car(String brand, String model, int year, int price) {
+    public Car(String vinCode, String brand, String model, int year, int price) {
+        this.vinCode = vinCode;
         this.brand = brand;
         this.model = model;
         this.year = year;
@@ -42,6 +41,14 @@ public class Car {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getVinCode() {
+        return vinCode;
+    }
+
+    public void setVinCode(String vinCode) {
+        this.vinCode = vinCode;
     }
 
     public String getBrand() {

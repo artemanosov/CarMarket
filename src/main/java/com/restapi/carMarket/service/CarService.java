@@ -28,14 +28,22 @@ public class CarService {
         return carDao.findById(id).orElseThrow(() -> new CarNotFoundException("Car with id("+id+") is not found"));
     }
 
-
-    public void removeCarFromMarket(Car car) {
-        if(carDao.exists(Example.of(car)))
-            carDao.delete(car);
-        else
-            throw new CarNotFoundException("A Car with properties("+car.toString()+") is not found");
-
+    public void removeCarByVinCode(String vinCode) {
+        if(isVinCodeInvalid(vinCode))
+            throw new CarNotValidException("Vin code is not valid");
+        else{
+            Car carToDelete = carDao.findByVinCode(vinCode);
+            deleteCarIfPresent(vinCode, carToDelete);
+        }
     }
+
+    private void deleteCarIfPresent(String vinCode, Car carToDelete) {
+        if(carToDelete!=null)
+            carDao.delete(carToDelete);
+        else
+            throw new CarNotFoundException("Car with VIN:"+vinCode+"was not found");
+    }
+
 
     public void removeCarFromMarketById(Long id) {
         Car carToRemove = getCarById(id);
@@ -47,7 +55,7 @@ public class CarService {
         
         if(oldCar.isPresent()) {
             checkIfCarIsValid(car);
-            BeanUtils.copyProperties(oldCar.get(), car, "id");
+            BeanUtils.copyProperties(oldCar.get(), car, "id","vinCode");
             return carDao.save(oldCar.get());
         }
         else{
@@ -62,7 +70,11 @@ public class CarService {
     }
 
     private void checkIfCarIsValid(Car car) {
-        if(isCarBrandNull(car)){
+
+        if(isVinCodeInvalid(car.getVinCode())){
+            throw new CarNotValidException("VIN code length is not valid");
+        }
+        else if(isCarBrandNull(car)){
             throw new CarNotValidException("Brand name cannot be null");
         }
         else if(isCarBrandBlank(car)){
@@ -80,6 +92,10 @@ public class CarService {
         else if(isInvalidYear(car)) {
             throw new CarNotValidException("The year is invalid, valid range from 1885 to current year");
         }
+    }
+
+    private boolean isVinCodeInvalid(String vinCode) {
+        return vinCode == null || vinCode.length()!=17;
     }
 
     private boolean isCarModelBlank(Car car) {

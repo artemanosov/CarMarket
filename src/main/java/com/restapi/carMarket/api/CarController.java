@@ -33,10 +33,10 @@ public class CarController {
         return carService.addCarToMarket(car);
     }
 
-    @DeleteMapping
+    @DeleteMapping("{vinCode}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCar(@NotNull @RequestBody Car car){
-        carService.removeCarFromMarket(car);
+    public void deleteCar(@NotNull @PathVariable("vinCode") String vinCode){
+        carService.removeCarByVinCode(vinCode);
     }
 
     @DeleteMapping("{id}")
