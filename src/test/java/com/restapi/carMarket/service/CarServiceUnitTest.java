@@ -5,18 +5,14 @@ import com.restapi.carMarket.exceptions.CarNotFoundException;
 import com.restapi.carMarket.exceptions.CarNotValidException;
 import com.restapi.carMarket.model.Car;
 import org.junit.Assert;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.domain.Example;
-
 
 import java.util.Optional;
-
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -136,7 +132,7 @@ public class CarServiceUnitTest {
     }
 
     @Test
-    public void deleteExistentCarByIdShouldCallDeleteByIdMethodOfDAO() {
+    public void removeExistentCarByIdShouldCallDeleteByIdMethodOfDAO() {
         Car newCar = new Car("11111111111111111","BMW","5 Series", 2010, 40000);
         newCar.setId(10L);
 
@@ -148,7 +144,7 @@ public class CarServiceUnitTest {
     }
 
     @Test(expected = CarNotFoundException.class)
-    public void deleteNonExistentCarByIdShouldThrowCarNotFoundException() {
+    public void removeNonExistentCarByIdShouldThrowCarNotFoundException() {
         Long id = 10L;
 
         given(carDAO.findById(id)).willReturn(Optional.empty());
@@ -174,7 +170,7 @@ public class CarServiceUnitTest {
     }
 
     @Test(expected = CarNotValidException.class)
-    public void removeCarByVinWithBlankVinShouldThrowCarNotValidException() {
+    public void removeCarByVinWithIncorrectFormatVinShouldThrowCarNotValidException() {
         carService.removeCarByVinCode("");
 
         Mockito.verify(carDAO, Mockito.times(0)).delete(any(Car.class));
@@ -201,12 +197,25 @@ public class CarServiceUnitTest {
         Assert.assertEquals(newCar,oldCar);
     }
 
-    @Test
-    public void updateOfNonExistentCarMustSaveNewCar() {
-        Long id = 10L;
-        Car newCar = new Car("11111111111111111","BMW","7 Series", 2010, 10000);
 
-        given(carDAO.findById(id)).willReturn(Optional.empty());
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithNullVinShouldThrowCarNotValidException() {
+        Long id = 10L;
+        Car newCar = new Car(null,"BMW","7 Series", 2010, 10000);
+
+        given(carDAO.findById(id)).willReturn(Optional.of(new Car("21111111111111111","BMW","7 Series", 2010, 10000)));
+
+        carService.updateCarInformation(id, newCar);
+
+        Mockito.verify(carDAO).save(any(Car.class));
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithVinOfIncorrectFormatShouldThrowCarNotValidException() {
+        Long id = 10L;
+        Car newCar = new Car("111","BMW","7 Series", 2010, 10000);
+
+        given(carDAO.findById(id)).willReturn(Optional.of(new Car("21111111111111111","BMW","7 Series", 2010, 10000)));
 
         carService.updateCarInformation(id, newCar);
 
@@ -269,7 +278,30 @@ public class CarServiceUnitTest {
         carService.updateCarInformation(id, newCar);
     }
 
+    @Test
+    public void updateOfNonExistentCarMustSaveNewCar() {
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","BMW","7 Series", 2010, 10000);
 
+        given(carDAO.findById(id)).willReturn(Optional.empty());
+
+        carService.updateCarInformation(id, newCar);
+
+        Mockito.verify(carDAO).save(any(Car.class));
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateOfNonExistentCarWithInvalidCarMustThrowCarNotValidException() {
+        Long id = 10L;
+        Car newCar = new Car(null,"BMW","7 Series", 2010, 10000);
+
+        given(carDAO.findById(id)).willReturn(Optional.empty());
+
+        carService.updateCarInformation(id, newCar);
+
+        Mockito.verify(carDAO, Mockito.times(0)).save(any(Car.class));
+    }
+    
 
     // I Feel like I don't need to test this because my update method calls addCarToMarket,
     // which already has been tested for checking the validity of the new car

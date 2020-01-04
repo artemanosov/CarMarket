@@ -33,9 +33,9 @@ public class CarController {
         return carService.addCarToMarket(car);
     }
 
-    @DeleteMapping("{vinCode}")
+    @DeleteMapping("/vin/{vinCode}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCar(@NotNull @PathVariable("vinCode") String vinCode){
+    public void deleteByVinCode(@NotNull @PathVariable("vinCode") String vinCode){
         carService.removeCarByVinCode(vinCode);
     }
 

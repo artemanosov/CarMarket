@@ -57,6 +57,7 @@ public class CarService {
             checkIfCarIsValid(car);
             BeanUtils.copyProperties(oldCar.get(), car, "id","vinCode");
             return carDao.save(oldCar.get());
+
         }
         else{
             return addCarToMarket(car);
