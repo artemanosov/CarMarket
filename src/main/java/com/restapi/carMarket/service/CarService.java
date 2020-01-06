@@ -55,7 +55,8 @@ public class CarService {
         
         if(oldCar.isPresent()) {
             checkIfCarIsValid(car);
-            BeanUtils.copyProperties(oldCar.get(), car, "id","vinCode");
+            BeanUtils.copyProperties(car, oldCar.get(), "id","vinCode");
+            oldCar.get().setPostTime(LocalDateTime.now());
             return carDao.save(oldCar.get());
 
         }
