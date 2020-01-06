@@ -1,178 +1,357 @@
 package com.restapi.carMarket.service;
 
-
-
-import com.restapi.carMarket.CarMarketApplication;
 import com.restapi.carMarket.dao.CarDao;
 import com.restapi.carMarket.exceptions.CarNotFoundException;
 import com.restapi.carMarket.exceptions.CarNotValidException;
 import com.restapi.carMarket.model.Car;
 import org.junit.Assert;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Example;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = CarMarketApplication.class)
+@RunWith(MockitoJUnitRunner.class)
 public class CarServiceUnitTest {
-    @Autowired
-    CarService carService;
-
-    @MockBean
+    @Mock
     CarDao carDAO;
 
-    @Test
-    public void insertionOfValidCarShouldReturnTrue() throws Exception{
-        Car car = new Car("BMW","5 Series", 2017, 40000);
-        carService.insert(car);
-        Mockito.verify(carDAO,Mockito.times(1)).save(car);
-
-    }
-
-    @Test(expected = CarNotValidException.class)
-    public void insertionOfCarWithYearLessThan1885ShouldThrowCarNotValidException() throws Exception{
-        Car car = new Car("BMW","5 Series", 0, 40000);
-        carService.insert(car);
-        Mockito.verify(carDAO,Mockito.times(0)).save(car);
-    }
-
-    @Test(expected = CarNotValidException.class)
-    public void insertionOfCarWithYearBiggerThanCurrentShouldThrowCarNotValidException() throws Exception{
-        Car car = new Car("BMW","5 Series", 2200, 40000);
-        carService.insert(car);
-        Mockito.verify(carDAO,Mockito.times(0)).save(car);
-    }
-
-    @Test(expected = CarNotValidException.class)
-    public void insertionOfCarWithPriceLessThan1ShouldThrowCarNotValidException() throws Exception{
-        Car car = new Car("BMW","5 Series", 2010, 0);
-        carService.insert(car);
-        Mockito.verify(carDAO,Mockito.times(0)).save(car);
-    }
-
-    @Test(expected = CarNotValidException.class)
-    public void insertionOfCarWithPriceToHighShouldThrowCarNotValidException() throws Exception{
-        Car car = new Car("BMW","5 Series", 2010, 2100000000);
-        carService.insert(car);
-        Mockito.verify(carDAO,Mockito.times(0)).save(car);
-    }
+    @InjectMocks
+    CarService carService;
 
     @Test
-    public void findAllCarsShouldCallFindAllMethodOfDAO() throws Exception{
-        carService.findAll();
-        Mockito.verify(carDAO,Mockito.times(1)).findAll();
+    public void insertionOfValidCarShouldReturnTrue() {
+        Car car = new Car("11111111111111111","BMW","5 Series", 2017, 40000);
+
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO).save(car);
+
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithVinCodeTooShortShouldThrowCarNotValidException() {
+        Car car = new Car("111111111111111","BMW","5 Series", 2017, 40000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithVinCodeTooLongShouldThrowCarNotValidException() {
+        Car car = new Car("1111111111111111111","BMW","5 Series", 2017, 40000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithYearLessThan1885ShouldThrowCarNotValidException()  {
+        Car car = new Car("11111111111111111","BMW","5 Series", 0, 40000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithYearBiggerThanCurrentShouldThrowCarNotValidException() {
+        Car car = new Car("11111111111111111","BMW","5 Series", 2200, 40000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithPriceLessThan1ShouldThrowCarNotValidException() {
+        Car car = new Car("11111111111111111","BMW","5 Series", 2010, 0);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithPriceToHighShouldThrowCarNotValidException() {
+        Car car = new Car("11111111111111111","BMW","5 Series", 2010, 2100000000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithBlankBrandShouldThrowCarNotValidException() {
+        Car car = new Car("11111111111111111","","5 Series", 2010, 2100000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithNullBrandShouldThrowCarNotValidException() {
+        Car car = new Car("11111111111111111",null,"5 Series", 2010, 2100000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithBlankModelShouldThrowCarNotValidException() {
+        Car car = new Car("11111111111111111","BMW","", 2010, 2100000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void insertionOfCarWithNullModelShouldReturnCarNotValidException() {
+        Car car = new Car("11111111111111111","BMW",null, 2010, 2100000);
+        carService.addCarToMarket(car);
+        Mockito.verify(carDAO,Mockito.times(0)).save(car);
     }
 
     @Test
-    public void findExistentCarByIdShouldReturnThisCar() throws Exception{
-        Car car = new Car("BMW","5 Series", 2200, 40000);
+    public void findAllCarsShouldCallFindAllMethodOfDAO() {
+        carService.getAllCarsOnMarket();
+        Mockito.verify(carDAO).findAll();
+    }
+
+    @Test
+    public void findExistentCarByIdShouldReturnThisCar() {
+        Car car = new Car("11111111111111111","BMW","5 Series", 2010, 40000);
         Optional<Car> returnedCar = Optional.of(car);
         Long id = 10L;
 
         given(carDAO.findById(id)).willReturn(returnedCar);
-        Car newCar = carService.findById(id);
+        Car newCar = carService.getCarById(id);
 
-        Assert.assertTrue(newCar.equals(car));
-        Mockito.verify(carDAO,Mockito.times(1)).findById(id);
+        Assert.assertEquals(newCar,car);
     }
 
     @Test(expected = CarNotFoundException.class)
-    public void findNonExistentCarByIdShouldThrowCarNotFoundException() throws Exception{
-        Optional<Car> returnedCar = Optional.empty();
+    public void findNonExistentCarByIdShouldThrowCarNotFoundException() {
         Long id = 10L;
 
-        given(carDAO.findById(id)).willReturn(returnedCar);
-        carService.findById(id);
-
-        Mockito.verify(carDAO,Mockito.times(1)).findById(id);
+        given(carDAO.findById(id)).willReturn(Optional.empty());
+        carService.getCarById(id);
     }
 
     @Test
-    public void deleteExistentCarByIdShouldCallDeleteByIdMethodOfDAO() throws Exception{
-        Long id = 10L;
+    public void removeExistentCarByIdShouldCallDeleteByIdMethodOfDAO() {
+        Car newCar = new Car("11111111111111111","BMW","5 Series", 2010, 40000);
+        newCar.setId(10L);
 
-        given(carDAO.existsById(id)).willReturn(true);
-        carService.deleteById(id);
+        given(carDAO.findById(newCar.getId())).willReturn( Optional.of(newCar));
 
-        Mockito.verify(carDAO,Mockito.times(1)).deleteById(id);
+        carService.removeCarFromMarketById(newCar.getId());
+
+        Mockito.verify(carDAO).deleteById(newCar.getId());
     }
 
     @Test(expected = CarNotFoundException.class)
-    public void deleteNonExistentCarByIdShouldThrowCarNotFoundException() throws Exception{
+    public void removeNonExistentCarByIdShouldThrowCarNotFoundException() {
         Long id = 10L;
 
-        given(carDAO.existsById(id)).willReturn(false);
-        carService.deleteById(id);
-
-        Mockito.verify(carDAO,Mockito.times(1)).deleteById(id);
+        given(carDAO.findById(id)).willReturn(Optional.empty());
+        carService.removeCarFromMarketById(id);
     }
 
     @Test
-    public void deleteExistentCarShouldCallDeleteMethodOfDAO() throws Exception{
-        Car car = new Car("BMW","5 Series", 2010, 40000);
+    public void removeExistentCarByVinWithValidVinShouldRemoveTheCar() {
+        Car car = new Car("11111111111111111","BMW","5 Series", 2010, 40000);
+        given(carDAO.findByVinCode("11111111111111111"))
+                .willReturn(car);
 
-        given(carDAO.exists(Example.of(car))).willReturn(true);
-        carService.delete(car);
+        carService.removeCarByVinCode("11111111111111111");
 
-        Mockito.verify(carDAO,Mockito.times(1)).delete(car);
+        Mockito.verify(carDAO).delete(car);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void removeCarByVinWithNullVinShouldThrowCarNotValidException() {
+        carService.removeCarByVinCode(null);
+
+        Mockito.verify(carDAO, Mockito.times(0)).delete(any(Car.class));
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void removeCarByVinWithIncorrectFormatVinShouldThrowCarNotValidException() {
+        carService.removeCarByVinCode("");
+
+        Mockito.verify(carDAO, Mockito.times(0)).delete(any(Car.class));
     }
 
     @Test(expected = CarNotFoundException.class)
-    public void deleteNonExistentCarShouldThrowCarNotFoundException() throws Exception{
-        Car car = new Car("BMW","5 Series", 2010, 40000);
+    public void removeNonExistentCarWithValidVinShouldThrowCarNotFoundException() {
+        given(carDAO.findByVinCode("11111111111111111")).willReturn(null);
 
-        given(carDAO.exists(Example.of(car))).willReturn(false);
-        carService.delete(car);
+        carService.removeCarByVinCode("11111111111111111");
 
-        Mockito.verify(carDAO,Mockito.times(0)).delete(car);
+        Mockito.verify(carDAO, Mockito.times(0)).delete(any(Car.class));
     }
 
     @Test
-    public void updateExistentCarWithValidCarShouldUpdateTheObject() throws Exception{
+    public void updateExistentCarWithValidCarShouldUpdateTheObject() {
         Long id = 10L;
-        Car newCar = new Car("BMW","7 Series", 2010, 10000);
-        Car oldCar = new Car("BMW","5 Series", 2010, 10000);
+        Car newCar = new Car("11111111111111111","BMW","7 Series", 2010, 10000);
+        Car oldCar = new Car("11111111111111111","BMW","5 Series", 2010, 10000);
 
         given(carDAO.findById(id)).willReturn(Optional.of(oldCar));
-        carService.update(id, newCar);
+        carService.updateCarInformation(id, newCar);
 
-        Assert.assertTrue(newCar.equals(oldCar));
+        Assert.assertEquals(newCar,oldCar);
     }
 
-    @Test(expected = CarNotFoundException.class)
-    public void updateNonExistentCarWithValidCarShouldThrowCarNotFoundException() throws Exception{
-        Long id = 10L;
-        Car newCar = new Car("BMW","7 Series", 2010, 10000);
 
-        carService.update(id, newCar);
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithNullVinShouldThrowCarNotValidException() {
+        Long id = 10L;
+        Car newCar = new Car(null,"BMW","7 Series", 2010, 10000);
+
+        given(carDAO.findById(id)).willReturn(Optional.of(new Car("21111111111111111","BMW","7 Series", 2010, 10000)));
+
+        carService.updateCarInformation(id, newCar);
+
+        Mockito.verify(carDAO).save(any(Car.class));
     }
 
     @Test(expected = CarNotValidException.class)
-    public void updateExistentCarWithInValidCarShouldThrowCarNotValidException(){
+    public void updateExistentCarWithCarWithVinOfIncorrectFormatShouldThrowCarNotValidException() {
         Long id = 10L;
-        Car newCar = new Car("BMW","7 Series", 0, 10000);
+        Car newCar = new Car("111","BMW","7 Series", 2010, 10000);
 
-        carService.update(id, newCar);
+        given(carDAO.findById(id)).willReturn(Optional.of(new Car("21111111111111111","BMW","7 Series", 2010, 10000)));
+
+        carService.updateCarInformation(id, newCar);
+
+        Mockito.verify(carDAO).save(any(Car.class));
     }
 
     @Test(expected = CarNotValidException.class)
-    public void updateNonExistentCarWithInvalidCarShouldThrowCarNotValidException(){
+    public void updateExistentCarWithCarWithYearTooLowShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","BMW","7 Series", 0, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithYearTooHighShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","BMW","7 Series", 2220, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithPriceTooHighShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","BMW","7 Series", 2010, 2100000000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithNullModelShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","BMW",null, 2010, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithBlankModelShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","BMW","", 2010, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithNullBrandShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111",null,"5 Series", 2010, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateExistentCarWithCarWithBlankBrandShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","","5 Series", 2100, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test
+    public void updateOfNonExistentCarMustSaveNewCar() {
+        Long id = 10L;
+        Car newCar = new Car("11111111111111111","BMW","7 Series", 2010, 10000);
+
+        given(carDAO.findById(id)).willReturn(Optional.empty());
+
+        carService.updateCarInformation(id, newCar);
+
+        Mockito.verify(carDAO).save(any(Car.class));
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateOfNonExistentCarWithInvalidCarMustThrowCarNotValidException() {
+        Long id = 10L;
+        Car newCar = new Car(null,"BMW","7 Series", 2010, 10000);
+
+        given(carDAO.findById(id)).willReturn(Optional.empty());
+
+        carService.updateCarInformation(id, newCar);
+
+        Mockito.verify(carDAO, Mockito.times(0)).save(any(Car.class));
+    }
+    
+
+    // I Feel like I don't need to test this because my update method calls addCarToMarket,
+    // which already has been tested for checking the validity of the new car
+
+
+    /*@Test(expected = CarNotValidException.class)
+    public void updateNonExistentCarWithCarWithPriceShouldThrowCarNotValidException(){
         Long id = 10L;
         Car newCar = new Car("BMW","7 Series", 1997, 0);
 
-        carService.update(id, newCar);
+        carService.updateCarInformation(id, newCar);
     }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateNonExistentCarWithCarWithYearShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("BMW","7 Series", 0, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateNonExistentCarWithCarWithBlankModelShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("BMW","", 2010, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateNonExistentCarWithCarWithNullModelShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("BMW",null, 2010, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateNonExistentCarWithCarWithBlankBrandShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car("","5 Series", 2010, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }
+
+    @Test(expected = CarNotValidException.class)
+    public void updateNonExistentCarWithCarWithNullBrandShouldThrowCarNotValidException(){
+        Long id = 10L;
+        Car newCar = new Car(null,"5 Series", 2010, 10000);
+
+        carService.updateCarInformation(id, newCar);
+    }*/
 }

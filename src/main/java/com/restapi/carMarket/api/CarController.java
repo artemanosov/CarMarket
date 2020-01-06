@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/cars")
@@ -20,36 +19,36 @@ public class CarController {
 
     @GetMapping
     public List<Car> findAll() {
-        return carService.findAll();
+        return carService.getAllCarsOnMarket();
     }
 
     @GetMapping("{id}")
     public Car findById(@NotNull @PathVariable("id") Long id) {
-        return carService.findById(id);
+        return carService.getCarById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void insert(@NotNull @Valid @RequestBody Car car) {
-        carService.insert(car);
+    public Car insert(@NotNull @RequestBody Car car) {
+        return carService.addCarToMarket(car);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/vin/{vinCode}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@NotNull @Valid @RequestBody Car car){
-        carService.delete(car);
+    public void deleteByVinCode(@NotNull @PathVariable("vinCode") String vinCode){
+        carService.removeCarByVinCode(vinCode);
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@NotNull @PathVariable("id") Long id){
-        carService.deleteById(id);
+        carService.removeCarFromMarketById(id);
     }
 
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void update(@NotNull @PathVariable Long id, @NotNull @Valid @RequestBody Car car){
-        carService.update(id,car);
+    public Car update(@NotNull @PathVariable Long id, @NotNull @RequestBody Car car){
+        return carService.updateCarInformation(id,car);
     }
 
 }
