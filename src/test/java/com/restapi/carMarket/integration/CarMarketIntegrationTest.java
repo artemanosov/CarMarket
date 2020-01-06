@@ -2,128 +2,135 @@ package com.restapi.carMarket.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restapi.carMarket.api.CarController;
+import com.restapi.carMarket.dao.CarDao;
 import com.restapi.carMarket.exceptions.CarNotFoundException;
 import com.restapi.carMarket.exceptions.CarNotValidException;
-import com.restapi.carMarket.exceptions.RestExceptionHandler;
 import com.restapi.carMarket.model.Car;
 import com.restapi.carMarket.service.CarService;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.transaction.Transactional;
 
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class CarMarketIntegrationTest {
+    @Autowired
     private MockMvc mockMvc;
 
-    @InjectMocks
+    @Autowired
     private CarController carController;
 
-    @Mock
+    @Autowired
     private CarService carService;
 
+    @Autowired
+    private CarDao carDao;
+
     private JacksonTester<Car> jsonCar;
+
 
     @Before
     public void setup(){
         JacksonTester.initFields(this, new ObjectMapper());
-
-        mockMvc = MockMvcBuilders.standaloneSetup(carController)
-                .setControllerAdvice(new RestExceptionHandler())
-                .build();
     }
 
+    @Transactional
     @Test
     public void findCarsMustReturnAListOfCars() throws Exception {
-        List<Car> cars = new ArrayList<Car>();
-        cars.add(new Car("11111111111111111","Porsche", "Panamera", 2017, 75000));
-        cars.add(new Car("11111111111111111","BMW", "3 Series", 2019, 50000));
+        Car car1 = carController.insert(new Car("11111111111341111","Porsche", "Panamera", 2017, 75000));
+        Car car2 = carController.insert(new Car("21111111111111111","BMW", "3 Series", 2019, 50000));
 
-        given(carService.getAllCarsOnMarket())
-                .willReturn(cars);
 
-        mockMvc.perform(get("/cars")
-                .contentType(APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].brand", is(cars.get(0).getBrand())))
-                .andExpect(jsonPath("$[0].model", is(cars.get(0).getModel())))
-                .andExpect(jsonPath("$[0].year", is(cars.get(0).getYear())))
-                .andExpect(jsonPath("$[0].price", is(cars.get(0).getPrice())))
-                .andExpect(jsonPath("$[1].brand", is(cars.get(1).getBrand())))
-                .andExpect(jsonPath("$[1].model", is(cars.get(1).getModel())))
-                .andExpect(jsonPath("$[1].year", is(cars.get(1).getYear())))
-                .andExpect(jsonPath("$[1].price", is(cars.get(1).getPrice())));
+        MvcResult mvcResult = mockMvc.perform(get("/cars")
+                .contentType(APPLICATION_JSON)).andReturn();
 
+        JSONArray response = new JSONArray(mvcResult.getResponse().getContentAsString());
+
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertTrue(response.length()>1);
     }
 
+
+    @Transactional
     @Test
     public void findByIdMustReturnACarObject() throws Exception {
-        Car car = new Car("11111111111111111","Porsche", "Panamera", 2017, 75000);
-        car.setId(Long.valueOf(1));
-        given(carService.getCarById(car.getId())).willReturn(car);
+        Car car = carController.insert(new Car("11111111111111111","Porsche", "Panamera", 2017, 75000));
 
-        mockMvc.perform(get("/cars/" + car.getId())
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(print())
-                .andExpect(jsonPath("brand", is(car.getBrand())))
-                .andExpect(jsonPath("model", is(car.getModel())))
-                .andExpect(jsonPath("year", is(car.getYear())))
-                .andExpect(jsonPath("price", is(car.getPrice())));
+
+        MvcResult mvcResult = mockMvc.perform(get("/cars/" + car.getId())
+                .contentType(APPLICATION_JSON)).andReturn();
+
+        JSONObject response = new JSONObject(mvcResult.getResponse().getContentAsString());
+
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertNotNull(response.get("id"));
+        assertEquals("11111111111111111", response.get("vinCode"));
+        assertEquals("Porsche", response.get("brand"));
+        assertEquals("Panamera", response.get("model"));
+        assertEquals(2017, response.get("year"));
+        assertEquals(75000, response.get("price"));
+        assertNotNull(response.get("postTime"));
     }
 
+    @Transactional
     @Test
     public void findByIdWhenCarNotFoundShouldReturnCode404() throws Exception{
-        given(carService.getCarById(10L)).willThrow(new CarNotFoundException());
-
-        mockMvc.perform(get("/cars/10")
+        mockMvc.perform(get("/cars/"+Long.valueOf(-1))
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
+    @Transactional
     @Test
     public void insertShouldReturnCode201AndCarWhenSuccessful() throws Exception {
-        Car car = new Car("11111111111111111","Porsche","Panamera",2017, 38000);
+        Car car = new Car("11333111111111111","Porsche","Panamera",2017, 38000);
 
-        given(carService.addCarToMarket(car)).willReturn(car);
 
-        mockMvc.perform(post("/cars")
+        MvcResult mvcResult =  mockMvc.perform(post("/cars")
                 .contentType(APPLICATION_JSON)
                 .characterEncoding("utf-8")
                 .content(jsonCar.write(car).getJson()))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("brand", is(car.getBrand())))
-                .andExpect(jsonPath("model", is(car.getModel())))
-                .andExpect(jsonPath("year", is(car.getYear())))
-                .andExpect(jsonPath("price", is(car.getPrice())));
+                .andReturn();
+
+        JSONObject response = new JSONObject(mvcResult.getResponse().getContentAsString());
+
+        assertEquals(201,mvcResult.getResponse().getStatus());
+
+        assertNotNull(response.get("id"));
+        assertEquals("11333111111111111",response.get("vinCode"));
+        assertEquals("Porsche", response.get("brand"));
+        assertEquals("Panamera", response.get("model"));
+        assertEquals(2017, response.get("year"));
+        assertEquals(38000, response.get("price"));
+        assertNotNull(response.get("postTime"));
     }
 
+    @Transactional
     @Test
-    public void insertShouldReturnCode400WhenNotSuccessful() throws Exception{
+    public void insertShouldReturnCode400WhenCarIsInvalid() throws Exception{
         Car car = new Car("11111111111111111","Porsche","Panamera",2017, 0);
-
-        given(carService.addCarToMarket(car)).willThrow(CarNotValidException.class);
 
         mockMvc.perform(post("/cars")
                 .contentType(APPLICATION_JSON)
@@ -132,21 +139,27 @@ public class CarMarketIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    public void deleteByIdShouldReturnCode204() throws Exception{
-        mockMvc.perform(delete("/cars/"+Long.valueOf(1))
+    @Transactional
+    @Test(expected = CarNotFoundException.class)
+    public void deleteByIdShouldReturnCode204WhenSuccessful() throws Exception{
+        Car car = carController.insert(new Car("22222222222222222","Porsche","Panamera",2017, 75000));
+
+        mockMvc.perform(delete("/cars/"+car.getId())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNoContent()).andDo(print());
+
+        assertNull(carController.findById(car.getId()));
     }
 
+    @Transactional
     @Test
     public void deleteByIdShouldReturnCode404WhenCarIsNotFound() throws Exception{
-        doThrow(new CarNotFoundException()).when(carService).removeCarFromMarketById(10L);
-        mockMvc.perform(delete("/cars/"+10L)
+        mockMvc.perform(delete("/cars/"+Long.valueOf(-10))
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound()).andDo(print());
     }
 
+    @Ignore
     @Test
     public void deleteShouldReturnStatusCode204() throws Exception{
         Car car = new Car("11111111111111111","Porsche","Panamera",2017, 40000);
@@ -168,6 +181,7 @@ public class CarMarketIntegrationTest {
                 .andExpect(status().isNotFound()).andDo(print());
     }*/
 
+    @Ignore
     @Test
     public void updateShouldReturnCode200() throws Exception{
         Car car = new Car("11111111111111111","Porsche","Panamera",2017, 40000);
@@ -178,6 +192,7 @@ public class CarMarketIntegrationTest {
                 .andExpect(status().isOk()).andDo(print());
     }
 
+    @Ignore
     @Test
     public void updateMustReturnCode400WhenCarIsInvalid() throws Exception{
         Car car = new Car("11111111111111111","Porsche","Panamera",2017, 40000);
